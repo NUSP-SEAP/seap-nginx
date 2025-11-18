@@ -1,0 +1,21 @@
+# /etc/nginx/sites-available/checklist
+server {
+    listen 80;
+    listen [::]:80;
+    server_name form.senado-nusp.cloud;
+
+    # Redireciona todo o tráfego HTTP → HTTPS
+    return 301 https://form.senado-nusp.cloud$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    server_name form.senado-nusp.cloud;
+
+    ssl_certificate     /etc/letsencrypt/live/form.senado-nusp.cloud/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/form.senado-nusp.cloud/privkey.pem;
+
+    # Redireciona permanentemente (301) para o novo endereço
+    return 301 https://senado-nusp.cloud/forms/checklist/;
+}
