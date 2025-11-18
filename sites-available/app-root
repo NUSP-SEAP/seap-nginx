@@ -62,8 +62,10 @@ server {
     location = /webhook/whoami                        { proxy_pass http://django_upstream; }
     location = /webhook/forms/lookup/operadores       { proxy_pass http://django_upstream; }
     location = /webhook/forms/lookup/salas            { proxy_pass http://django_upstream; }
+    location = /webhook/forms/lookup/registro-operacao { proxy_pass http://django_upstream; }
     location = /webhook/admin/operadores/novo         { proxy_pass http://django_upstream; }
     location = /webhook/operacao/registro             { proxy_pass http://django_upstream; }
+    location = /webhook/operacao/anormalidade/registro { proxy_pass http://django_upstream; }
     location = /webhook/forms/checklist/registro      { proxy_pass http://django_upstream; }
 
 
