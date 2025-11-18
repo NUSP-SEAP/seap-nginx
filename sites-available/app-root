@@ -64,6 +64,8 @@ server {
     location = /webhook/forms/lookup/salas            { proxy_pass http://django_upstream; }
     location = /webhook/admin/operadores/novo         { proxy_pass http://django_upstream; }
     location = /webhook/operacao/registro             { proxy_pass http://django_upstream; }
+    location = /webhook/forms/checklist/registro      { proxy_pass http://django_upstream; }
+
 
     # ---------- Demais /webhook/* continuam no n8n ----------
     # Mantém todos os outros fluxos do n8n funcionando como antes.
