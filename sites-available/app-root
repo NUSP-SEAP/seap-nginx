@@ -67,13 +67,6 @@ server {
     location = /webhook/operacao/registro             { proxy_pass http://django_upstream; }
     location = /webhook/operacao/anormalidade/registro { proxy_pass http://django_upstream; }
     location = /webhook/forms/checklist/registro      { proxy_pass http://django_upstream; }
-
-
-    # ---------- Demais /webhook/* continuam no n8n ----------
-    # Mantém todos os outros fluxos do n8n funcionando como antes.
-    location ^~ /webhook/ {
-        proxy_ssl_server_name on;
-        proxy_set_header Host n8n.senado-nusp.cloud;
-        proxy_pass https://n8n.senado-nusp.cloud;
-    }
+    location = /webhook/auth/logout                 { proxy_pass http://django_upstream; }
+    
 }
