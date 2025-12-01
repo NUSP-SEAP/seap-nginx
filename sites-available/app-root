@@ -65,6 +65,14 @@ server {
     location = /webhook/forms/lookup/registro-operacao { proxy_pass http://django_upstream; }
     location = /webhook/admin/operadores/novo         { proxy_pass http://django_upstream; }
     location = /webhook/admin/admins/novo             { proxy_pass http://django_upstream; }
+    location = /webhook/admin/dashboard/operadores    { proxy_pass http://django_upstream; }
+    location = /webhook/admin/dashboard/checklists    { proxy_pass http://django_upstream; }
+    location = /webhook/admin/dashboard/anormalidades/salas     { proxy_pass http://django_upstream; }
+    location = /webhook/admin/dashboard/anormalidades/lista     { proxy_pass http://django_upstream; }
+    location = /webhook/admin/dashboard/operacoes     { proxy_pass http://django_upstream; }
+    location = /webhook/admin/operacao/detalhe        { proxy_pass http://django_upstream; }
+    location = /webhook/admin/checklist/detalhe        { proxy_pass http://django_upstream; }
+    location = /webhook/admin/anormalidade/detalhe        { proxy_pass http://django_upstream; }
     location = /webhook/operacao/registro             { proxy_pass http://django_upstream; }
     location = /webhook/operacao/audio/estado-sessao    { proxy_pass http://django_upstream; }
     location = /webhook/operacao/audio/salvar-entrada   { proxy_pass http://django_upstream; }
