@@ -60,6 +60,7 @@ server {
     # (mantém o front intacto e só desvia estas rotas)  :contentReference[oaicite:3]{index=3}
     location = /webhook/login                         { proxy_pass http://django_upstream; }
     location = /webhook/whoami                        { proxy_pass http://django_upstream; }
+    location = /webhook/forms/lookup/comissoes        { proxy_pass http://django_upstream; }
     location = /webhook/forms/lookup/operadores       { proxy_pass http://django_upstream; }
     location = /webhook/forms/lookup/salas            { proxy_pass http://django_upstream; }
     location = /webhook/forms/lookup/registro-operacao { proxy_pass http://django_upstream; }
