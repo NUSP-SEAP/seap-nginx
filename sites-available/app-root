@@ -114,6 +114,9 @@ server {
     location = /webhook/admin/form-edit/checklist-itens/save        { proxy_pass http://django_upstream; }
     location = /webhook/admin/form-edit/comissoes/list       { proxy_pass http://django_upstream; }
     location = /webhook/admin/form-edit/comissoes/save      { proxy_pass http://django_upstream; }
+    location = /webhook/admin/operacoes/rds/anos   { proxy_pass http://django_upstream; }
+    location = /webhook/admin/operacoes/rds/meses  { proxy_pass http://django_upstream; }
+    location = /webhook/admin/operacoes/rds/gerar  { proxy_pass http://django_upstream; }
     location = /webhook/operacao/registro             { proxy_pass http://django_upstream; }
     location = /webhook/operacao/audio/estado-sessao    { proxy_pass http://django_upstream; }
     location = /webhook/operacao/audio/salvar-entrada   { proxy_pass http://django_upstream; }
