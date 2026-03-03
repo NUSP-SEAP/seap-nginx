@@ -1,0 +1,123 @@
+# ------------------------------------------------------------
+# UPSTREAM - Aponta para o Gunicorn de Homolog (Porta 8001)
+# ------------------------------------------------------------
+upstream django_upstream_homolog {
+    server 127.0.0.1:8001;
+    keepalive 32;
+}
+
+# ------------------------------------------------------------
+# BLOCO HTTP (Porta 80) -> Redireciona tudo para HTTPS (sem www)
+# ------------------------------------------------------------
+server {
+    listen 80;
+    listen [::]:80;
+    server_name homolog.senado-nusp.cloud www.homolog.senado-nusp.cloud;
+
+    # Redirecionamento seguro
+    return 301 https://homolog.senado-nusp.cloud$request_uri;
+}
+
+# ------------------------------------------------------------
+# WWW -> sem WWW (HTTPS)
+# ------------------------------------------------------------
+server {
+    listen 443 ssl ssl;
+    listen [::]:443 ssl ssl;
+    server_name www.homolog.senado-nusp.cloud;
+
+    ssl_certificate /etc/letsencrypt/live/homolog.senado-nusp.cloud/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/homolog.senado-nusp.cloud/privkey.pem;
+
+    return 301 https://homolog.senado-nusp.cloud$request_uri;
+}
+
+# ------------------------------------------------------------
+# BLOCO HTTPS (Porta 443) - Onde o site funciona
+# ------------------------------------------------------------
+server {
+    listen 443 ssl ssl;
+    listen [::]:443 ssl ssl;
+    server_name homolog.senado-nusp.cloud;
+
+    # --- CERTIFICADOS SSL (Do Homolog) ---
+    ssl_certificate /etc/letsencrypt/live/homolog.senado-nusp.cloud/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/homolog.senado-nusp.cloud/privkey.pem;
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+
+    # --- FRONTEND (Pasta de Teste) ---
+    root /var/www/app-homolog;
+    index index.html;
+
+    # --- ANTI-CACHE: Força o navegador a sempre revalidar HTML/CSS/JS ---
+    # O navegador verifica com o servidor se o arquivo mudou (via ETag/Last-Modified).
+    # Se não mudou → 304 (rápido). Se mudou → baixa a versão nova.
+    # A pasta /files/ não é afetada (tem seu próprio add_header que sobrescreve).
+    add_header Cache-Control "no-cache, must-revalidate";
+
+    # Cabeçalhos de Proxy Globais
+    proxy_http_version 1.1;
+    proxy_set_header Host               $host;
+    proxy_set_header X-Real-IP          $remote_addr;
+    proxy_set_header X-Forwarded-For    $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto  $scheme;
+
+    # --- ROTAS DO FRONTEND ---
+    location / {
+        try_files $uri $uri/ =404;
+    }
+
+    # Tratamento da Home (Auth Guard)
+    location = /home {
+        auth_request /webhook/auth/html-guard;
+        error_page 401 = /index.html;
+        try_files /home.html =404;
+    }
+    location = /home.html {
+        auth_request /webhook/auth/html-guard;
+        error_page 401 = /index.html;
+        try_files /home.html =404;
+    }
+    
+    # Proteção de pastas Admin/Forms
+    location /forms/ {
+        auth_request /webhook/auth/html-guard;
+        error_page 401 = /index.html;
+        try_files $uri $uri/ =404;
+    }
+    location ^~ /admin/ {
+        auth_request /webhook/auth/html-guard;
+        error_page 401 = /index.html;
+        try_files $uri $uri/ =404;
+    }
+
+    # --- ARQUIVOS DE MÍDIA (ISOLADO) ---
+    # Aponta para a pasta de homolog que definimos no passo do .env
+    location ^~ /files/ {
+        alias /var/lib/senado_nusp_homolog/;
+        autoindex off;
+        try_files $uri =404;
+        expires 30d;
+        add_header Cache-Control "public, max-age=2592000";
+    }
+
+    # --- BACKEND API (Catch-all simplificado) ---
+    # Ao invés de listar 50 rotas, pegamos tudo que começa com /webhook/
+    # e mandamos para o Django.
+    location /webhook/ {
+        proxy_pass http://django_upstream_homolog;
+        
+        # IMPORTANTE: Redefinir estes headers aqui dentro é obrigatório
+        # porque o Nginx limpa a herança quando usamos proxy_pass com outros headers.
+        proxy_set_header Host               $host;
+        proxy_set_header X-Real-IP          $remote_addr;
+        proxy_set_header X-Forwarded-For    $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto  https;
+        }
+
+    # --- METABASE (Proxy) ---
+    location ^~ /metabase/ {
+        proxy_pass http://127.0.0.1:3000/;
+    }
+}
